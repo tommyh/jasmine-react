@@ -1,7 +1,7 @@
 describe("jasmineReact", function(){
 
   describe("top level environment", function(){
-    it("should define one global object called 'jasmineReact", function(){
+    it("should define one global object called 'jasmineReact'", function(){
       expect(window.jasmineReact).toBeDefined();
     });
   });
@@ -103,6 +103,16 @@ describe("jasmineReact", function(){
 
       expect(foo.props.defaultBar).not.toBe("real value");
       expect(foo.props.defaultBar).toBe("fake value");
+    });
+
+    it("should allow a react class to have a function which was added via 'jasmineReact.addMethodToClass' be spied on", function(){
+      var simpleKlass = React.createClass({
+        render: function(){
+          return React.DOM.div({});
+        }
+      });
+      jasmineReact.addMethodToClass(simpleKlass, "fauxMethod", function(){});
+      jasmineReact.spyOnClass(simpleKlass, "fauxMethod").andCallFake(function(){});
     });
 
     it("should return the spy as the return value", function(){
@@ -279,8 +289,40 @@ describe("jasmineReact", function(){
     });
   });
 
-  xdescribe("unmountComponent", function(){
+  describe("unmountComponent", function(){
+    var componentWillUnmountSpy, barKlass;
 
+    beforeEach(function(){
+      componentWillUnmountSpy = jasmine.createSpy("componentWillUnmount");
+
+      barKlass = React.createClass({
+        render: function(){
+          return React.DOM.div();
+        },
+        componentWillUnmount: function(){
+          componentWillUnmountSpy();
+        }
+      });
+
+    });
+
+    it("should unmount the component", function(){
+      var barComponent = jasmineReact.renderComponent(barKlass());
+      expect(componentWillUnmountSpy.callCount).toBe(0);
+
+      jasmineReact.unmountComponent(barComponent);
+
+      expect(componentWillUnmountSpy.callCount).toBe(1);
+    });
+
+    it("should return the return value of unmountComponentAtNode", function(){
+      var fakeUnmount = jasmine.createSpy("unmountComponentAtNode");
+      spyOn(React, "unmountComponentAtNode").andReturn(fakeUnmount);
+
+      var barComponent = jasmineReact.renderComponent(barKlass());
+
+      expect(jasmineReact.unmountComponent(barComponent)).toBe(fakeUnmount);
+    });
   });
 
   describe("clearJasmineContent", function(){
@@ -317,6 +359,19 @@ describe("jasmineReact", function(){
       jasmineReact.clearJasmineContent();
 
       expect(componentWillUnmountSpy.callCount).toBe(1);
+    });
+
+    it("should warn the user if a jasmine content element can't be found", function(){
+      spyOn(jasmineReact, "getJasmineContent").andCallFake(function(){
+        return document.getElementById("bogus");
+      });
+
+      spyOn(console, "warn");
+
+      jasmineReact.clearJasmineContent();
+
+      expect(console.warn).toHaveBeenCalled();
+      expect(console.warn.mostRecentCall.args[0].substring(0, 63)).toBe("jasmineReact is unable to clear out the jasmine content element");
     });
   });
 

@@ -19,8 +19,9 @@ jasmineReact.spyOnClass = function(klass, methodName){
   this.reactSpies_ = this.reactSpies_ || [];
   this.reactSpies_.push(jasmineSpy);
 
-  // TODO: I need to check that __reactAutoBindMap exists.  Add a failing test for this behavior
-  klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
+  if(klassProto.__reactAutoBindMap){
+    klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
+  }
 
   return jasmineSpy;
 };
@@ -71,12 +72,17 @@ jasmineReact.removeAllSpies = function(){
 
   for (var i = 0; i < this.reactSpies_.length; i++) {
     var spy = this.reactSpies_[i];
-    // TODO: Do I need to check that baseObj.__reactAutoBindMap exists??
-    spy.baseObj.__reactAutoBindMap[spy.methodName] = spy.originalValue;
+    if(spy.baseObj.__reactAutoBindMap){
+      spy.baseObj.__reactAutoBindMap[spy.methodName] = spy.originalValue;
+    }
     spy.baseObj[spy.methodName] = spy.originalValue;
   }
 
   this.reactSpies_ = [];
+};
+
+jasmineReact.unmountComponent = function(component){
+  return React.unmountComponentAtNode(component.getDOMNode().parentNode);
 };
 
 jasmineReact.clearJasmineContent = function(){
@@ -84,6 +90,14 @@ jasmineReact.clearJasmineContent = function(){
   if(jasmineContentEl){
     React.unmountComponentAtNode(jasmineContentEl);
     jasmineContentEl.innerHTML = "";
+  } else {
+    var warningMessage = "jasmineReact is unable to clear out the jasmine content element, because it could not find an " +
+      "element with an id of 'jasmine_content'. " +
+      "This may result in bugs, because a react component which isn't unmounted may pollute other tests " +
+      "and cause test failures/weirdness. " +
+      "If you'd like to override this behavior to look for a different element, then implement a method like this: " +
+      "jasmineReact.getJasmineContent = function(){ return document.getElementById('foo'); };"
+    console.warn(warningMessage);
   }
 };
 
