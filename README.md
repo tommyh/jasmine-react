@@ -105,15 +105,17 @@ window.Avatar = React.createClass({
 describe("Avatar", function(){
   describe("rotateProfile", function(){
     it("should call 'rotate' on the Profile subcomponent", function(){
-      jasmineReact.createStubComponent(window, "Profile");
-      jasmineReact.addMethodToClass(window.Profile, "rotate", function(){});
-      jasmineReact.spyOnClass(window.Profile, "rotate");
+      var profileClassStub = jasmineReact.createStubComponent(window, "Profile");
+
+      // We could also do: jasmineReact.addMethodToClass(window.Profile, "rotate", function(){});
+      jasmineReact.addMethodToClass(profileClassStub, "rotate", function(){});
+      jasmineReact.spyOnClass(profileClassStub, "rotate");
 
       var avatar = jasmineReact.renderComponent(<Avatar />);
 
-      expect(jasmineReact.classPrototype(fakeProfileKlass).rotate).not.toHaveBeenCalled();
+      expect(jasmineReact.classPrototype(profileClassStub).rotate).not.toHaveBeenCalled();
       avatar.rotateProfile();
-      expect(jasmineReact.classPrototype(fakeProfileKlass).rotate).toHaveBeenCalled();
+      expect(jasmineReact.classPrototype(profileClassStub).rotate).toHaveBeenCalled();
     });
   });
 });

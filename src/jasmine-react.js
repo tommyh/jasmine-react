@@ -40,7 +40,7 @@ jasmineReact.createStubComponent = function(obj, propertyName){
   this.jasmineReactComponentStubs_ = this.jasmineReactComponentStubs_ || [];
   this.jasmineReactComponentStubs_.push({obj: obj, propertyName: propertyName, originalValue: obj[propertyName]});
 
-  obj[propertyName] = React.createClass({
+  return obj[propertyName] = React.createClass({
     render: function(){
       return React.DOM.div();
     }
