@@ -16,8 +16,8 @@ jasmineReact.spyOnClass = function(klass, methodName){
   var klassProto = jasmineReact.classPrototype(klass),
     jasmineSpy = spyOn(klassProto, methodName);
 
-  this.reactSpies_ = this.reactSpies_ || [];
-  this.reactSpies_.push(jasmineSpy);
+  this.jasmineReactSpies_ = this.jasmineReactSpies_ || [];
+  this.jasmineReactSpies_.push(jasmineSpy);
 
   if(klassProto.__reactAutoBindMap){
     klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
@@ -59,9 +59,8 @@ jasmineReact.setDisplayNameForClass = function(klass, displayName){
   var originalDisplayName = klass.componentConstructor.displayName;
   klass.componentConstructor.displayName = displayName;
 
-  // TODO: this.jasmineReactClassDisplayNameOverrides_
-  this.reactClassDisplayNameOverrides_ = this.reactClassDisplayNameOverrides_ || [];
-  this.reactClassDisplayNameOverrides_.push({klass: klass, originalDisplayName: originalDisplayName});
+  this.jasmineReactClassDisplayNameOverrides_ = this.jasmineReactClassDisplayNameOverrides_ || [];
+  this.jasmineReactClassDisplayNameOverrides_.push({klass: klass, originalDisplayName: originalDisplayName});
   
   return klass;
 };
@@ -80,32 +79,32 @@ jasmineReact.resetComponentStubs = function(){
 };
 
 jasmineReact.resetDisplayNameForClasses = function(){
-  if(!this.reactClassDisplayNameOverrides_){
+  if(!this.jasmineReactClassDisplayNameOverrides_){
     return;
   }
 
-  for (var i = 0; i < this.reactClassDisplayNameOverrides_.length; i++) {
-    var override = this.reactClassDisplayNameOverrides_[i];
+  for (var i = 0; i < this.jasmineReactClassDisplayNameOverrides_.length; i++) {
+    var override = this.jasmineReactClassDisplayNameOverrides_[i];
     override.klass.componentConstructor.displayName = override.originalDisplayName;
   }
 
-  this.reactClassDisplayNameOverrides_ = [];
+  this.jasmineReactClassDisplayNameOverrides_ = [];
 };
 
 jasmineReact.removeAllSpies = function(){
-  if(!this.reactSpies_){
+  if(!this.jasmineReactSpies_){
     return;
   }
 
-  for (var i = 0; i < this.reactSpies_.length; i++) {
-    var spy = this.reactSpies_[i];
+  for (var i = 0; i < this.jasmineReactSpies_.length; i++) {
+    var spy = this.jasmineReactSpies_[i];
     if(spy.baseObj.__reactAutoBindMap){
       spy.baseObj.__reactAutoBindMap[spy.methodName] = spy.originalValue;
     }
     spy.baseObj[spy.methodName] = spy.originalValue;
   }
 
-  this.reactSpies_ = [];
+  this.jasmineReactSpies_ = [];
 };
 
 jasmineReact.unmountComponent = function(component){
