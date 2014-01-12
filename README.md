@@ -11,6 +11,7 @@ Here's an overview of how jasmineReact can be used:
 ### Spying on a method in a React Class
 
 ```javascript
+/** @jsx React.DOM */
 window.HelloWorld = React.createClass({
   getDefaultProps: function(){
     return { number: this.randomNumber() };
@@ -53,6 +54,7 @@ This is very helpful for isolating your component tests to just that component, 
 testing it's subcomponents.
 
 ```javascript
+/** @jsx React.DOM */
 window.Avatar = React.createClass({
   render: function() {
     return (
@@ -88,6 +90,7 @@ describe("Avatar", function(){
 This is needed to make a test double implement an interface which the component under test requires.
 
 ```javascript
+/** @jsx React.DOM */
 window.Avatar = React.createClass({
   render: function() {
     return (
