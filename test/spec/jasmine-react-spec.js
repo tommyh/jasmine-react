@@ -164,6 +164,53 @@ describe("jasmineReact", function(){
     });
   });
 
+  describe("createStubComponent", function(){
+    var namespace;
+
+    beforeEach(function(){
+      namespace = {
+        Profile: "not a react class definition"
+      };
+    });
+
+    it("should replace the property value with a valid react class definition", function(){
+      jasmineReact.createStubComponent(namespace, "Profile");
+
+      expect(jasmineReact.classPrototype(namespace.Profile).render).toBeDefined();
+    });
+
+    it("should have a react class definition which can be rendered", function(){
+      jasmineReact.createStubComponent(namespace, "Profile");
+
+      expect(function(){
+        jasmineReact.renderComponent(namespace.Profile());
+      }).not.toThrow();
+    });
+  });
+
+  describe("createStubComponent: test pollution", function(){
+    it("should reset the property value to the original value after the test", function(){
+      var namespace = {
+        Profile: "not a react class definition"
+      };
+
+      // lets pretend this is test #1
+      expect(namespace.Profile).toBe("not a react class definition");
+      jasmineReact.createStubComponent(namespace, "Profile");
+      expect(namespace.Profile).not.toBe("not a react class definition");
+      expect(typeof namespace.Profile).toBe("function");
+      expect(function(){
+        jasmineReact.renderComponent(namespace.Profile());
+      }).not.toThrow();
+
+      // these are the methods in the afterEach which are needed to prevent test pollution for createStubComponent
+      jasmineReact.resetComponentStubs();
+
+      // lets pretend this is test #2
+      expect(namespace.Profile).toBe("not a react class definition");
+    });
+  });
+
   describe("classPrototype", function(){
 
     var fooKlass;
@@ -225,6 +272,14 @@ describe("jasmineReact", function(){
       var foo = jasmineReact.renderComponent(fooKlass());
 
       expect(foo.newMethod()).toBe("I'm a stub for a real method!");
+    });
+
+    it("should default the method definition to a no-op", function(){
+      jasmineReact.addMethodToClass(fooKlass, "newMethod");
+
+      var foo = jasmineReact.renderComponent(fooKlass());
+
+      expect(foo.newMethod()).toBeUndefined();
     });
 
     it("should return the react class", function(){
@@ -374,5 +429,124 @@ describe("jasmineReact", function(){
       expect(console.warn.mostRecentCall.args[0].substring(0, 63)).toBe("jasmineReact is unable to clear out the jasmine content element");
     });
   });
+
+  // If there is sample code in the documentation, it's imperative it be correct.
+  describe("documentation", function(){
+    describe("README", function(){
+      describe("synopsis", function(){
+        describe("Spying on a method in a React Class", function(){
+          beforeEach(function(){
+            window.HelloWorld = React.createClass({
+              getDefaultProps: function(){
+                return { number: this.randomNumber() };
+              },
+              randomNumber: function(){
+                return Math.random();
+              },
+              render: function() {
+                return React.DOM.div();
+//                return (<div>Hello {this.props.number}</div>);
+              }
+            });
+          });
+
+          describe("HelloWorld", function(){
+            it("can spy on a function for a React class", function(){
+              jasmineReact.spyOnClass(HelloWorld, "randomNumber").andReturn(42);
+
+              // jasmineReact wraps React.renderComponent, so you don't have to worry
+              //  about the async nature of when the actual DOM get's rendered, or selecting
+              //  where your component needs to get rendered (default is #jasmine_content)
+              var myWorld = jasmineReact.renderComponent(HelloWorld());
+//              var myWorld = jasmineReact.renderComponent(<HelloWorld />);
+
+              expect(myWorld.props.number).toBe(42);
+            });
+
+            it("can assert that a spy has been called", function(){
+              jasmineReact.spyOnClass(HelloWorld, "randomNumber");
+
+              jasmineReact.renderComponent(HelloWorld());
+
+              // because we spy on the class and not the instance, we have to assert that the
+              //   function on the class' prototype was called.
+              expect(jasmineReact.classPrototype(HelloWorld).randomNumber).toHaveBeenCalled();
+            });
+          });
+        });
+
+        describe("Replacing a component's subcomponent with a test double", function(){
+          beforeEach(function(){
+            window.Avatar = React.createClass({
+              render: function() {
+                return Profile({username: "Zuck", ref: "pic"});
+//                return (
+//                  <div>
+//                    <Profile username="Zuck" ref="pic" />
+//                  </div>
+//                  );
+              }
+            });
+
+            window.Profile = React.createClass({
+              render: function(){
+                throw("I like to blow up");
+              }
+            });
+          });
+
+          describe("Avatar", function(){
+
+            it("should spy on a subcomponent and use a test double component", function(){
+              jasmineReact.createStubComponent(window, "Profile");
+
+              // This line won't throw the "I like to blow up" error because we've replaced the class with a test double!
+              var avatar = jasmineReact.renderComponent(Avatar());
+//              var avatar = jasmineReact.renderComponent(<Avatar />);
+
+              expect(avatar.refs.pic.props.username).toBe("Zuck")
+            });
+
+          });
+        });
+
+        describe("Adding a method to a component class", function(){
+          beforeEach(function(){
+            window.Avatar = React.createClass({
+              render: function() {
+                return Profile({username: "Zuck", ref: "pic"});
+//                return (
+//                  <div>
+//                    <Profile username="Zuck" ref="pic" />
+//                  </div>
+//                  );
+              },
+
+              rotateProfile: function(){
+                this.refs.pic.rotate();
+              }
+            });
+          });
+
+          describe("Avatar", function(){
+            describe("rotateProfile", function(){
+              it("should call 'rotate' on the Profile subcomponent", function(){
+                jasmineReact.createStubComponent(window, "Profile");
+                jasmineReact.addMethodToClass(window.Profile, "rotate", function(){});
+                jasmineReact.spyOnClass(window.Profile, "rotate");
+
+                var avatar = jasmineReact.renderComponent(Avatar());
+//                var avatar = jasmineReact.renderComponent(<Avatar />);
+
+                expect(jasmineReact.classPrototype(window.Profile).rotate).not.toHaveBeenCalled();
+                avatar.rotateProfile();
+                expect(jasmineReact.classPrototype(window.Profile).rotate).toHaveBeenCalled();
+              });
+            });
+          });
+        });
+      });
+    });
+  })
 
 });

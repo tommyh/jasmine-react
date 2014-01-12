@@ -36,7 +36,21 @@ jasmineReact.classPrototype = function(klass){
   return componentConstructor.prototype;
 };
 
+jasmineReact.createStubComponent = function(obj, propertyName){
+  this.jasmineReactComponentStubs_ = this.jasmineReactComponentStubs_ || [];
+  this.jasmineReactComponentStubs_.push({obj: obj, propertyName: propertyName, originalValue: obj[propertyName]});
+
+  obj[propertyName] = React.createClass({
+    render: function(){
+      return React.DOM.div();
+    }
+  });
+};
+
 jasmineReact.addMethodToClass = function(klass, methodName, methodDefinition){
+  if(typeof methodDefinition === "undefined"){
+    methodDefinition = function(){};
+  }
   jasmineReact.classPrototype(klass)[methodName] = methodDefinition;
   return klass;
 };
@@ -45,12 +59,25 @@ jasmineReact.setDisplayNameForClass = function(klass, displayName){
   var originalDisplayName = klass.componentConstructor.displayName;
   klass.componentConstructor.displayName = displayName;
 
+  // TODO: this.jasmineReactClassDisplayNameOverrides_
   this.reactClassDisplayNameOverrides_ = this.reactClassDisplayNameOverrides_ || [];
   this.reactClassDisplayNameOverrides_.push({klass: klass, originalDisplayName: originalDisplayName});
   
   return klass;
 };
 
+jasmineReact.resetComponentStubs = function(){
+  if(!this.jasmineReactComponentStubs_){
+    return;
+  }
+
+  for (var i = 0; i < this.jasmineReactComponentStubs_.length; i++) {
+    var stub = this.jasmineReactComponentStubs_[i];
+    stub.obj[stub.propertyName] = stub.originalValue;
+  }
+
+  this.jasmineReactComponentStubs_ = [];
+};
 
 jasmineReact.resetDisplayNameForClasses = function(){
   if(!this.reactClassDisplayNameOverrides_){
@@ -58,8 +85,8 @@ jasmineReact.resetDisplayNameForClasses = function(){
   }
 
   for (var i = 0; i < this.reactClassDisplayNameOverrides_.length; i++) {
-    var obj = this.reactClassDisplayNameOverrides_[i];
-    obj.klass.componentConstructor.displayName = obj.originalDisplayName;
+    var override = this.reactClassDisplayNameOverrides_[i];
+    override.klass.componentConstructor.displayName = override.originalDisplayName;
   }
 
   this.reactClassDisplayNameOverrides_ = [];
