@@ -133,6 +133,7 @@ jasmineReact.getJasmineContent = function(){
 
 afterEach(function(){
   jasmineReact.removeAllSpies();
+  jasmineReact.resetComponentStubs();
   jasmineReact.resetDisplayNameForClasses();
   jasmineReact.clearJasmineContent();
 });
