@@ -120,3 +120,26 @@ describe("Avatar", function(){
   });
 });
 ```
+
+# API
+
+* jasmineReact.renderComponent
+* jasmineReact.spyOnClass
+* jasmineReact.classPrototype
+* jasmineReact.createStubComponent
+* jasmineReact.addMethodToClass
+* jasmineReact.setDisplayNameForClass
+* jasmineReact.unmountComponent
+* jasmineReact.getJasmineContent
+
+TODO: These api docs are looking a bit sparse.....
+
+
+# TODO
+
+* Install documentation
+* Api documentation
+* Contribution guide
+* MIT License
+* Travis CI
+* grunt.js/browserify/requirejs
