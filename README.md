@@ -126,23 +126,149 @@ describe("Avatar", function(){
 
 # API
 
-* jasmineReact.renderComponent
-* jasmineReact.spyOnClass
-* jasmineReact.classPrototype
-* jasmineReact.createStubComponent
-* jasmineReact.addMethodToClass
-* jasmineReact.setDisplayNameForClass
-* jasmineReact.unmountComponent
-* jasmineReact.getJasmineContent
+## jasmineReact.renderComponent
 
-TODO: These api docs are looking a bit sparse.....
+`jasmineReact.renderComponent(component, [container], [callback]);`
+
+When rendering a React component, this is a convenience function for React.renderComponent.
+
+It has a few helpful features:
+
+* the container argument is optional.  By default it will be: `document.getElementById("jasmine_content")
+* `React.renderComponent` will return before the rendering has occurred.  `jasmineReact.renderComponent` will wait
+  until the async render has been performed.
+
+Just like `React.renderComponent`, this method will return the component instance.
+
+
+## jasmineReact.spyOnClass
+
+`jasmineReact.spyOnClass(componentClass, functionName);`
+
+When you want to render a component and stub on a function for that component, you need to spyOn the function
+before the instance has been created because important functions (default props/state, render) happen during initialization.
+This means you need to spyOn the component class, not the component instance.
+
+This function performs the following:
+
+* uses the vanilla `jasmine.spyOn` to spy on the component class prototype
+* React does some performance tricks for [autobinding functions](http://facebook.github.io/react/blog/2013/07/02/react-v0-4-autobind-by-default.html),
+  so this function will abstract those away from you
+* returns a regular jasmine spy object, so you can chain additional spy functions onto it.
+  For example: `jasmineReact.spyOnClass(Avatar, "getWidth").andCallFake(function(){ return 120; });`
+
+## jasmineReact.classPrototype
+
+`jasmineReact.classPrototype(componentClass)`
+
+After you've spied on a component class using `jasmineReact.spyOnClass`, you will need to assert things
+on that component class.  This function returns you the object you want to make your assertions against.
+
+```js
+jasmineReact.spyOnClass(Avatar, "getWidth");
+
+var myAvatar = jasmineReact.renderComponent(<Avatar />);
+myAvatar.getWidth();
+
+expect(jasmineReact.classPrototype(Avatar).getWidth).toHaveBeenCalled();
+
+// NOTE: your jasmine-fu will want todo this, but you can't:
+// expect(myAvatar.getWidth).toHaveBeenCalled(); <-- DON'T DO THIS
+```
+
+## jasmineReact.createStubComponent
+
+`jasmineReact.createStubComponent(namespace, className)`
+
+React components are intended to be composable (using one component inside a render function of another component). While this is great for code reuse, it makes isolating one component for a unit test slightly more difficult.
+
+  *Aside: Why do I want to isolate the component I'm testing from it's subcomponents? In a unit test, when you test one component you do want to have to test the behavior of a subcomponent, because that would turn into an integration test.*
+
+What you want todo is replace any subcomponent's real definition with a "test double". By default this stub component has only the miniumum behavior to be a valid React component: a render function which returns a dom node.
+
+If you want to add behavior to this stubComponent, so it confirms to the interface of the real component class, use the `jasmineReact.addMethodToClass` function.
+
+Let's say you have an avatar class named `ProfilePic` which is defined on the global namespace, `window`.
+To replace window.ProfilePic with a stub component (for the life of the jasmine test), you would do:
+
+```js
+jasmineReact.createStubComponent(window, "ProfilePic");
+```
+
+## jasmineReact.setDisplayNameForClass
+
+`jasmineReact.setDisplayNameForClass(componentClass, newDisplayName);`
+
+When React throws a validation error for a component, `Invariant Violation`, it will include in the error message the variable
+name for the component instance, ie the display name.  While this behavior is very helpful for developing, it can make your tests a bit tricky --
+property validations defined in mixins, `anyonomous` display names, shared specs, etc.
+
+This function allows you to set the display name for a component class, so the error messages you want to assert against
+are a bit more predictable.
+
+```js
+jasmineReact.setDisplayNameForClass(Avatar, "avatarDisplayName");
+
+expect(function(){
+  jasmineReact.renderComponent(<Avatar enlarge='true' />);
+}).toThrow("Invariant Violation: Invalid prop `enlarge` of type `string` supplied to `avatarDisplayName`, expected `boolean`.");
+}
+```
+
+
+## jasmineReact.unmountComponent
+
+`jasmineReact.unmountComponent(component);`
+
+This function makes it easy to unmount a component, given just the component instance.
+Unmounting a component is needed to test `componentWillUnmount` behavior.
+
+```js
+var myAvatar = jasmineReact.renderComponent(<Avatar />);
+jasmineReact.unmountComponent(myAvatar);
+```
+
+## jasmineReact.getJasmineContent
+
+After each test, it is imperative that jasmineReact clean up after itself so that one test doesn't pollute the next.
+One step in this process, is making sure that any component rendered gets unmounted.  By default, in a jasmine suite
+all DOM elements should be a child of the `#jasmine_content` div.  If that is true for you, then you won't need to use
+this function.  But if you use some other div to render your jasmine DOM, then you'll want to redefine this function to
+meet your specification.
+
+If your jasmine test page, uses `#spec-dom` as it's dom node, then you'd want to define the following:
+
+```js
+jasmineReact.getJasmineContent = function(){
+  return document.getElementById("spec-dom");
+};
+```
+
+# Installation
+
+To install, include the `src/jasmine-react.js` file in your jasmine spec helpers list.
+
+
+# Testing
+
+This project uses jasmine for it's automated tests.
+
+Right now it has 2 seperate builds: core tests, documentation tests.
+
+To run the tests, open the following files in your browser:
+
+* `jasmine-react/test/index.html`
+* `jasmine-react/test/documentation.html`
+
+Note: if you run these tests without a server, `documentation.html` will fail in Chrome due to a `file://` jsx issue.
+
+
+
+
 
 
 # TODO
 
-* Install documentation
-* Api documentation
-* Contribution guide
-* MIT License
+* use grunt.js for automated build, minification, etc
 * Travis CI
-* grunt.js/browserify/requirejs
+* browserify/requirejs compatablility
