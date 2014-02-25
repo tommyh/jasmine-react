@@ -1,39 +1,45 @@
 
 // Polyfill Function.prototype.bind for PhantomJS
 // see https://github.com/facebook/react/pull/347
-// source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+// source: https://github.com/facebook/react/blob/master/src/test/phantomjs-shims.js
 
-if(!Function.prototype.bind) {
+(function() {
 
-    console.warn('Polyfill Function.prototype.bind');
-    console.warn('Should appear in PhantomJS only');
+var Ap = Array.prototype;
+var slice = Ap.slice;
+var Fp = Function.prototype;
 
-    Function.prototype.bind = function(oThis) {
-        if(typeof this !== "function") {
-            // closest thing possible to the ECMAScript 5 internal 
-            // IsCallable function
-            throw new Error("Function.prototype.bind - "
-                            + "what is trying to be bound is not callable");
-        }
+if (!Fp.bind) {
+  // PhantomJS doesn't support Function.prototype.bind natively, so
+  // polyfill it whenever this module is required.
+  Fp.bind = function(context) {
+    var func = this;
+    var args = slice.call(arguments, 1);
 
-        var aArgs = Array.prototype.slice.call(arguments, 1),
-            Ap = Array.prototype,
-            fToBind = this, 
-            fNOP = function() {},
-            fBound = function() {
-                return fToBind.apply(this instanceof fNOP && oThis ? 
-                                     this:oThis,
-                                     aArgs.concat(Ap.slice.call(arguments)));
-            };
+    function bound() {
+      var invokedAsConstructor = func.prototype && (this instanceof func);
+      return func.apply(
+        // Ignore the context parameter when invoking the bound function
+        // as a constructor. Note that this includes not only constructor
+        // invocations using the new keyword but also calls to base class
+        // constructors such as BaseClass.call(this, ...) or super(...).
+        !invokedAsConstructor && context || this,
+        args.concat(slice.call(arguments))
+      );
+    }
 
-        fNOP.prototype = this.prototype;
-        fBound.prototype = new fNOP();
+    // The bound function must share the .prototype of the unbound
+    // function so that any object created by one constructor will count
+    // as an instance of both constructors.
+    bound.prototype = func.prototype;
 
-        return fBound;
-    };
-};
+    return bound;
+  };
+}
 
+})();
 
+// add div#jasmine_content since it is required by jasmineReact
 var content = document.createElement('div');
 content.id = 'jasmine_content';
 document.body.appendChild(content);
