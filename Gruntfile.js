@@ -18,7 +18,7 @@ module.exports = function(grunt) {
 
                 files: [
                     'test/setup.js',
-                    'jasmine-react.js',
+                    'index.js',
                     'test/documentation-spec.js',
                     'test/jasmine-react-spec.js'
                 ],
