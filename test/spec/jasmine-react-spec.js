@@ -125,7 +125,7 @@ describe("jasmineReact", function(){
 
       expect(mySpy.callCount).toBe(1);
     });
-    
+
     it("should maintain regular jasmine spy behavior", function(){
       jasmineReact.spyOnClass(fooKlass, "bar").andReturn(42);
 
@@ -435,6 +435,16 @@ describe("jasmineReact", function(){
       expect(console.warn).toHaveBeenCalled();
       expect(console.warn.mostRecentCall.args[0].substring(0, 63)).toBe("jasmineReact is unable to clear out the jasmine content element");
     });
+  });
+
+  describe('TestUtils convenience property', function() {
+
+    it('should have TestUtils property which is undefined', function() {
+
+      expect(jasmineReact.TestUtils).toBeUndefined();
+
+    });
+
   });
 
 });
