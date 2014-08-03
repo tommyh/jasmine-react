@@ -61,7 +61,7 @@ jasmineReact.setDisplayNameForClass = function(klass, displayName){
 
   this.jasmineReactClassDisplayNameOverrides_ = this.jasmineReactClassDisplayNameOverrides_ || [];
   this.jasmineReactClassDisplayNameOverrides_.push({klass: klass, originalDisplayName: originalDisplayName});
-  
+
   return klass;
 };
 
@@ -130,6 +130,11 @@ jasmineReact.clearJasmineContent = function(){
 jasmineReact.getJasmineContent = function(){
   return document.getElementById("jasmine_content");
 };
+
+if (React.addons && React.addons.TestUtils)
+{
+  jasmineReact.TestUtils = React.addons.TestUtils;
+}
 
 afterEach(function(){
   jasmineReact.removeAllSpies();

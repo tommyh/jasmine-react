@@ -244,6 +244,11 @@ jasmineReact.getJasmineContent = function(){
 };
 ```
 
+## jasmineReact.TestUtils
+
+This is not a function. It's simply an extra property on jasmineReact that will reference React.addons.TestUtils if you're using react-with-addons.js instead of react.js. See http://facebook.github.io/react/docs/test-utils.html for api reference.
+
+
 # Installation
 
 To install, include the `src/jasmine-react.js` file in your jasmine spec helpers list.
