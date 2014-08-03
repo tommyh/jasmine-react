@@ -51,7 +51,7 @@ describe("HelloWorld", function(){
 ### Replacing a component's subcomponent with a test double
 
 This is very helpful for isolating your component tests to just that component, and avoiding
-testing it's subcomponents.
+testing its subcomponents.
 
 ```javascript
 /** @jsx React.DOM */
@@ -182,7 +182,7 @@ expect(jasmineReact.classPrototype(Avatar).getWidth).toHaveBeenCalled();
 
 React components are intended to be composable (using one component inside a render function of another component). While this is great for code reuse, it makes isolating one component for a unit test slightly more difficult.
 
-  *Aside: Why do I want to isolate the component I'm testing from it's subcomponents? In a unit test, when you test one component you do want to have to test the behavior of a subcomponent, because that would turn into an integration test.*
+  *Aside: Why do I want to isolate the component I'm testing from its subcomponents? In a unit test, when you test one component you do want to have to test the behavior of a subcomponent, because that would turn into an integration test.*
 
 What you want todo is replace any subcomponent's real definition with a "test double". By default this stub component has only the miniumum behavior to be a valid React component: a render function which returns a dom node.
 
@@ -236,7 +236,7 @@ all DOM elements should be a child of the `#jasmine_content` div.  If that is tr
 this function.  But if you use some other div to render your jasmine DOM, then you'll want to redefine this function to
 meet your specification.
 
-If your jasmine test page, uses `#spec-dom` as it's dom node, then you'd want to define the following:
+If your jasmine test page, uses `#spec-dom` as its dom node, then you'd want to define the following:
 
 ```js
 jasmineReact.getJasmineContent = function(){
@@ -251,7 +251,7 @@ To install, include the `src/jasmine-react.js` file in your jasmine spec helpers
 
 # Testing
 
-This project uses jasmine for it's automated tests.
+This project uses jasmine for its automated tests.
 
 Right now it has 2 seperate builds: core tests, documentation tests.
 
