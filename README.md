@@ -265,12 +265,6 @@ To run the tests once with PhantomJS:
 grunt karma:unit
 ```
 
-```bash
-npm install grunt
-npm install
-grunt karma
-```
-
 # TODO
 
 * Add the following grunt tasks: minification, linting
