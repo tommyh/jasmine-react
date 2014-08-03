@@ -251,24 +251,29 @@ To install, include the `src/jasmine-react.js` file in your jasmine spec helpers
 
 # Testing
 
-This project uses jasmine for its automated tests.
+Install node, npm, and grunt.
 
-Right now it has 2 seperate builds: core tests, documentation tests.
+To run all of the tests (Chrome, Firefox, PhantomJS) with autoWatch:
 
-To run the tests, open the following files in your browser:
+```bash
+grunt karma
+```
 
-* `jasmine-react/test/index.html`
-* `jasmine-react/test/documentation.html`
+To run the tests once with PhantomJS:
 
-Note: if you run these tests without a server, `documentation.html` will fail in Chrome due to a `file://` jsx issue.
+```bash
+grunt karma:unit
+```
 
-
-
-
-
+```bash
+npm install grunt
+npm install
+grunt karma
+```
 
 # TODO
 
-* use grunt.js for automated build, minification, etc
-* Travis CI
-* browserify/requirejs compatablility
+* Add the following grunt tasks: minification, linting
+* Make the project node compatible (https://blog.codecentric.de/en/2014/02/cross-platform-javascript/)
+* Create a module on npm and bower
+* Add the test suite to Travis CI
