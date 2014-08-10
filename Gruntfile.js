@@ -12,7 +12,8 @@ module.exports = function(grunt) {
                 preprocessors: {
                     'test/support/react.js': ['browserify'],
                     'test/documentation-spec.js': ['react-jsx'],
-                    'test/jasmine-react-spec.js': ['react-jsx']
+                    'test/jasmine-react-spec.js': ['react-jsx'],
+                    'src/jasmine-react.js': ['browserify']
                 },
 
                 files: [
