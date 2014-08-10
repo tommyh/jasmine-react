@@ -195,27 +195,6 @@ To replace window.ProfilePic with a stub component (for the life of the jasmine 
 jasmineReact.createStubComponent(window, "ProfilePic");
 ```
 
-## jasmineReact.setDisplayNameForClass
-
-`jasmineReact.setDisplayNameForClass(componentClass, newDisplayName);`
-
-When React throws a validation error for a component, `Invariant Violation`, it will include in the error message the variable
-name for the component instance, ie the display name.  While this behavior is very helpful for developing, it can make your tests a bit tricky --
-property validations defined in mixins, `anyonomous` display names, shared specs, etc.
-
-This function allows you to set the display name for a component class, so the error messages you want to assert against
-are a bit more predictable.
-
-```js
-jasmineReact.setDisplayNameForClass(Avatar, "avatarDisplayName");
-
-expect(function(){
-  jasmineReact.renderComponent(<Avatar enlarge='true' />);
-}).toThrow("Invariant Violation: Invalid prop `enlarge` of type `string` supplied to `avatarDisplayName`, expected `boolean`.");
-}
-```
-
-
 ## jasmineReact.unmountComponent
 
 `jasmineReact.unmountComponent(component);`
