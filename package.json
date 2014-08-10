@@ -1,6 +1,6 @@
 {
   "name": "jasmine-react-helpers",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "a small suite of helper functions to make unit testing React.js components painless.",
   "main": "src/jasmine-react.js",
   "author": "Tom Hallett",
