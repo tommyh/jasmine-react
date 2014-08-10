@@ -8,10 +8,6 @@
     "type": "git",
     "url": "git://github.com/tommyh/jasmine-react.git"
   },
-  "files": [
-    "test",
-    "index.js"
-  ],
   "devDependencies": {
     "browserify": "^4.2.3",
     "grunt": "^0.4.5",
