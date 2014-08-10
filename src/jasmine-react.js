@@ -26,8 +26,13 @@ jasmineReact.spyOnClass = function(klass, methodName){
   return jasmineSpy;
 };
 
+jasmineReact.classComponentConstructor = function(klass){
+  return klass.type ||                // React 0.11.1
+         klass.componentConstructor;  // React 0.8.0
+};
+
 jasmineReact.classPrototype = function(klass){
-  var componentConstructor = klass.componentConstructor;
+  var componentConstructor = jasmineReact.classComponentConstructor(klass);
 
   if(typeof componentConstructor === "undefined"){
     throw("A component constructor could not be found for this class.  Are you sure you passed in a the component definition for a React component?")
@@ -55,16 +60,6 @@ jasmineReact.addMethodToClass = function(klass, methodName, methodDefinition){
   return klass;
 };
 
-jasmineReact.setDisplayNameForClass = function(klass, displayName){
-  var originalDisplayName = klass.componentConstructor.displayName;
-  klass.componentConstructor.displayName = displayName;
-
-  this.jasmineReactClassDisplayNameOverrides_ = this.jasmineReactClassDisplayNameOverrides_ || [];
-  this.jasmineReactClassDisplayNameOverrides_.push({klass: klass, originalDisplayName: originalDisplayName});
-  
-  return klass;
-};
-
 jasmineReact.resetComponentStubs = function(){
   if(!this.jasmineReactComponentStubs_){
     return;
@@ -76,19 +71,6 @@ jasmineReact.resetComponentStubs = function(){
   }
 
   this.jasmineReactComponentStubs_ = [];
-};
-
-jasmineReact.resetDisplayNameForClasses = function(){
-  if(!this.jasmineReactClassDisplayNameOverrides_){
-    return;
-  }
-
-  for (var i = 0; i < this.jasmineReactClassDisplayNameOverrides_.length; i++) {
-    var override = this.jasmineReactClassDisplayNameOverrides_[i];
-    override.klass.componentConstructor.displayName = override.originalDisplayName;
-  }
-
-  this.jasmineReactClassDisplayNameOverrides_ = [];
 };
 
 jasmineReact.removeAllSpies = function(){
@@ -134,6 +116,5 @@ jasmineReact.getJasmineContent = function(){
 afterEach(function(){
   jasmineReact.removeAllSpies();
   jasmineReact.resetComponentStubs();
-  jasmineReact.resetDisplayNameForClasses();
   jasmineReact.clearJasmineContent();
 });

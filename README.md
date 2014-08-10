@@ -13,14 +13,14 @@ Here's an overview of how jasmineReact can be used:
 ```javascript
 /** @jsx React.DOM */
 window.HelloWorld = React.createClass({
-  getDefaultProps: function(){
+  getInitialState: function(){
     return { number: this.randomNumber() };
   },
   randomNumber: function(){
     return Math.random();
   },
   render: function() {
-    return (<div>Hello {this.props.number}</div>);
+    return (<div>Hello {this.state.number}</div>);
   }
 });
 
@@ -33,7 +33,7 @@ describe("HelloWorld", function(){
     //  where your component needs to get rendered (default is #jasmine_content)
     var myWorld = jasmineReact.renderComponent(<HelloWorld />);
 
-    expect(myWorld.props.number).toBe(42);
+    expect(myWorld.state.number).toBe(42);
   });
 
   it("can assert that a spy has been called", function(){

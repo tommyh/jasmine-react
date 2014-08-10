@@ -1,14 +1,11 @@
 {
   "name": "jasmine-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "a small suite of helper functions to make unit testing React.js components painless.",
   "author": "Tom Hallett",
   "repository": {
     "type": "git",
     "url": "git://github.com/tommyh/jasmine-react.git"
-  },
-  "dependencies": {
-    "react": "0.8.0"
   },
   "files": [
     "test",

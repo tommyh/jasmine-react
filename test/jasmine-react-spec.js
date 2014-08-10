@@ -71,7 +71,7 @@ describe("jasmineReact", function(){
       });
     });
 
-    it("should allow a react class to have a function be spied on (when called via the auto bind map)", function(){
+    it("should allow a react class to have a function be spied on (when called externally)", function(){
       jasmineReact.spyOnClass(fooKlass, "bar").andReturn("fake value");
 
       var foo = jasmineReact.renderComponent(fooKlass());
@@ -80,15 +80,15 @@ describe("jasmineReact", function(){
       expect(foo.bar()).toBe("fake value");
     });
 
-    it("should allow a react class to have a function be spied on (when called via the class prototype)", function(){
-      var klassWithADefaultProp = React.createClass({
+    it("should allow a react class to have a function be spied on (when called internally in a lifecycle function)", function(){
+      var klassWithAnInitialState = React.createClass({
         render: function(){
           return React.DOM.div({});
         },
 
-        getDefaultProps: function(){
+        getInitialState: function(){
           return {
-            defaultBar: this.bar()
+            initialBar: this.bar()
           }
         },
 
@@ -97,12 +97,33 @@ describe("jasmineReact", function(){
         }
       });
 
-      jasmineReact.spyOnClass(klassWithADefaultProp, "bar").andReturn("fake value");
+      jasmineReact.spyOnClass(klassWithAnInitialState, "bar").andReturn("fake value");
 
-      var foo = jasmineReact.renderComponent(klassWithADefaultProp());
+      var foo = jasmineReact.renderComponent(klassWithAnInitialState());
 
-      expect(foo.props.defaultBar).not.toBe("real value");
-      expect(foo.props.defaultBar).toBe("fake value");
+      expect(foo.state.initialBar).not.toBe("real value");
+      expect(foo.state.initialBar).toBe("fake value");
+    });
+
+    it("should allow a react class to have a function be spied on (when called inside the render function)", function(){
+      var klassWithARenderFunction = React.createClass({
+        render: function(){
+          return React.DOM.div({
+            className: this.bar()
+          });
+        },
+
+        bar: function(){
+          return "real-value";
+        }
+      });
+
+      jasmineReact.spyOnClass(klassWithARenderFunction, "bar").andReturn("fake-value");
+
+      var foo = jasmineReact.renderComponent(klassWithARenderFunction());
+
+      expect(foo.getDOMNode().className).not.toBe("real-value");
+      expect(foo.getDOMNode().className).toBe("fake-value");
     });
 
     it("should allow a react class to have a function which was added via 'jasmineReact.addMethodToClass' be spied on", function(){
@@ -293,61 +314,6 @@ describe("jasmineReact", function(){
       var returnValue = jasmineReact.addMethodToClass(fooKlass, "newMethod", function(){});
 
       expect(returnValue).toEqual(fooKlass);
-    });
-  });
-
-  describe("setDisplayNameForClass", function(){
-
-    var fooKlass;
-
-    beforeEach(function(){
-      fooKlass = React.createClass({
-
-        propTypes: {
-          myRequiredString: React.PropTypes.string.isRequired
-        },
-
-        render: function(){
-          return React.DOM.div({});
-        }
-      });
-    });
-
-    it("should allow a displayName to be set for a class", function(){
-      jasmineReact.setDisplayNameForClass(fooKlass, "testClass");
-
-      expect(function(){
-        var foo = jasmineReact.renderComponent(fooKlass());
-      }).toThrow("Invariant Violation: Required prop `myRequiredString` was not specified in `testClass`.");
-    });
-
-    it("should return the class", function(){
-      var returnValue = jasmineReact.setDisplayNameForClass(fooKlass, "testClass");
-      expect(returnValue).toBe(fooKlass);
-    });
-
-  });
-
-  describe("setDisplayNameForClass: test pollution", function(){
-    it("should not let setting a displayName in one test pollute another test", function(){
-      var fakeDisplayName = "testClass",
-        barKlass = React.createClass({
-          render: function(){
-            return React.DOM.div({});
-          }
-        });
-
-      // let's pretend this is test #1
-      expect(barKlass.componentConstructor.displayName).toBeUndefined();
-      jasmineReact.setDisplayNameForClass(barKlass, fakeDisplayName);
-      expect(barKlass.componentConstructor.displayName).toBe(fakeDisplayName);
-
-      // these are the methods in the afterEach which are needed to prevent test pollution for setDisplayNameForClass
-      jasmineReact.resetDisplayNameForClasses();
-
-      // let's pretend this is test #2
-      expect(barKlass.componentConstructor.displayName).not.toBe(fakeDisplayName);
-      expect(barKlass.componentConstructor.displayName).toBeUndefined();
     });
   });
 
