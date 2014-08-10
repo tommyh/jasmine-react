@@ -1,5 +1,5 @@
 {
-  "name": "jasmine-react",
+  "name": "jasmine-react-helpers",
   "version": "0.1.1",
   "description": "a small suite of helper functions to make unit testing React.js components painless.",
   "main": "src/jasmine-react.js",
