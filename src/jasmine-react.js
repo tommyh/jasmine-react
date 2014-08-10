@@ -1,9 +1,12 @@
 var React = require('react');
 
+var spies = [],
+  componentStubs = [];
+
 var jasmineReact = {
   renderComponent: function(component, container, callback){
     if(typeof container === "undefined"){
-      container = jasmineReact.getJasmineContent();
+      container = this.getJasmineContent();
     }
 
     var comp = (typeof callback === "undefined") ?
@@ -14,12 +17,14 @@ var jasmineReact = {
   },
 
   spyOnClass: function(klass, methodName){
-    var klassProto = jasmineReact.classPrototype(klass),
+    var klassProto = this.classPrototype(klass),
       jasmineSpy = spyOn(klassProto, methodName);
 
-    this.jasmineReactSpies_ = this.jasmineReactSpies_ || [];
-    this.jasmineReactSpies_.push(jasmineSpy);
+    // keep track of the spies, so we can clean up the __reactAutoBindMap later
+    spies.push(jasmineSpy);
 
+    // react.js will autobind `this` to the correct value and it caches that
+    //  result on a __reactAutoBindMap for performance reasons.
     if(klassProto.__reactAutoBindMap){
       klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
     }
@@ -33,7 +38,7 @@ var jasmineReact = {
   },
 
   classPrototype: function(klass){
-    var componentConstructor = jasmineReact.classComponentConstructor(klass);
+    var componentConstructor = this.classComponentConstructor(klass);
 
     if(typeof componentConstructor === "undefined"){
       throw("A component constructor could not be found for this class.  Are you sure you passed in a the component definition for a React component?")
@@ -43,8 +48,8 @@ var jasmineReact = {
   },
 
   createStubComponent: function(obj, propertyName){
-    this.jasmineReactComponentStubs_ = this.jasmineReactComponentStubs_ || [];
-    this.jasmineReactComponentStubs_.push({obj: obj, propertyName: propertyName, originalValue: obj[propertyName]});
+    // keep track of the components we stub, so we can swap them back later
+    componentStubs.push({obj: obj, propertyName: propertyName, originalValue: obj[propertyName]});
 
     return obj[propertyName] = React.createClass({
       render: function(){
@@ -57,37 +62,29 @@ var jasmineReact = {
     if(typeof methodDefinition === "undefined"){
       methodDefinition = function(){};
     }
-    jasmineReact.classPrototype(klass)[methodName] = methodDefinition;
+    this.classPrototype(klass)[methodName] = methodDefinition;
     return klass;
   },
 
   resetComponentStubs: function(){
-    if(!this.jasmineReactComponentStubs_){
-      return;
-    }
-
-    for (var i = 0; i < this.jasmineReactComponentStubs_.length; i++) {
-      var stub = this.jasmineReactComponentStubs_[i];
+    for (var i = 0; i < componentStubs.length; i++) {
+      var stub = componentStubs[i];
       stub.obj[stub.propertyName] = stub.originalValue;
     }
 
-    this.jasmineReactComponentStubs_ = [];
+    componentStubs = [];
   },
 
   removeAllSpies: function(){
-    if(!this.jasmineReactSpies_){
-      return;
-    }
-
-    for (var i = 0; i < this.jasmineReactSpies_.length; i++) {
-      var spy = this.jasmineReactSpies_[i];
+    for (var i = 0; i < spies.length; i++) {
+      var spy = spies[i];
       if(spy.baseObj.__reactAutoBindMap){
         spy.baseObj.__reactAutoBindMap[spy.methodName] = spy.originalValue;
       }
       spy.baseObj[spy.methodName] = spy.originalValue;
     }
 
-    this.jasmineReactSpies_ = [];
+    spies = [];
   },
 
   unmountComponent: function(component){
@@ -95,7 +92,7 @@ var jasmineReact = {
   },
 
   clearJasmineContent: function(){
-    var jasmineContentEl = jasmineReact.getJasmineContent();
+    var jasmineContentEl = this.getJasmineContent();
     if(jasmineContentEl){
       React.unmountComponentAtNode(jasmineContentEl);
       jasmineContentEl.innerHTML = "";
@@ -115,6 +112,7 @@ var jasmineReact = {
   }
 };
 
+// TODO: this has no automated test coverage.  Add some integration tests for coverage.
 afterEach(function(){
   jasmineReact.removeAllSpies();
   jasmineReact.resetComponentStubs();
