@@ -1,17 +1,21 @@
 var React = require('react');
 
 var spies = [],
-  componentStubs = [];
+  componentStubs = [],
+  renderedComponents = [];
 
 var jasmineReact = {
   renderComponent: function(component, container, callback){
     if(typeof container === "undefined"){
-      container = this.getJasmineContent();
+      container = this.getDefaultContainer();
     }
 
     var comp = (typeof callback === "undefined") ?
       React.renderComponent(component, container) :
       React.renderComponent(component, container, callback);
+
+    // keep track of the components we render, so we can unmount them later
+    renderedComponents.push(comp);
 
     return comp;
   },
@@ -87,27 +91,24 @@ var jasmineReact = {
     spies = [];
   },
 
-  unmountComponent: function(component){
-    return React.unmountComponentAtNode(component.getDOMNode().parentNode);
+  unmountAllRenderedComponents: function(){
+    for (var i = 0; i < renderedComponents.length; i++) {
+      var renderedComponent = renderedComponents[i];
+      this.unmountComponent(renderedComponent);
+    }
+
+    renderedComponents = [];
   },
 
-  clearJasmineContent: function(){
-    var jasmineContentEl = this.getJasmineContent();
-    if(jasmineContentEl){
-      React.unmountComponentAtNode(jasmineContentEl);
-      jasmineContentEl.innerHTML = "";
+  unmountComponent: function(component){
+    if(component.isMounted()){
+      return React.unmountComponentAtNode(component.getDOMNode().parentNode);
     } else {
-      var warningMessage = "jasmineReact is unable to clear out the jasmine content element, because it could not find an " +
-        "element with an id of 'jasmine_content'. " +
-        "This may result in bugs, because a react component which isn't unmounted may pollute other tests " +
-        "and cause test failures/weirdness. " +
-        "If you'd like to override this behavior to look for a different element, then implement a method like this: " +
-        "jasmineReact.getJasmineContent = function(){ return document.getElementById('foo'); };"
-      console.warn(warningMessage);
+      return false;
     }
   },
 
-  getJasmineContent: function(){
+  getDefaultContainer: function(){
     return document.getElementById("jasmine_content");
   }
 };
@@ -116,7 +117,7 @@ var jasmineReact = {
 afterEach(function(){
   jasmineReact.removeAllSpies();
   jasmineReact.resetComponentStubs();
-  jasmineReact.clearJasmineContent();
+  jasmineReact.unmountAllRenderedComponents();
 });
 
 module.exports = jasmineReact;

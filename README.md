@@ -130,11 +130,17 @@ describe("Avatar", function(){
 
 `jasmineReact.renderComponent(component, [container], [callback]);`
 
-When rendering a React component, this is a convenience function for React.renderComponent.
+When rendering a React component, this is a convenience function for `React.renderComponent`.
 
 It has a few helpful features:
 
-* the container argument is optional.  By default it will be: `document.getElementById("jasmine_content")
+* the component is actually rendered to an attached DOM node (unlike `React.addons.TestUtils.renderIntoDocument which
+  renders into a detached DOM node).
+* the component will be automatically unmounted after the test is complete.
+  NOTE: If you call React.renderComponent in a jasmine test and the component is not unmounted, that component
+  will pollute any subsequent tests which try to render into that container.
+* the container argument is optional.  By default it will be: `document.getElementById("jasmine_content").  If you
+  want to override this behavior, look at the documentation for `jasmineReact.getDefaultContainer`
 * `React.renderComponent` will return before the rendering has occurred.  `jasmineReact.renderComponent` will wait
   until the async render has been performed.
 
@@ -207,25 +213,27 @@ var myAvatar = jasmineReact.renderComponent(<Avatar />);
 jasmineReact.unmountComponent(myAvatar);
 ```
 
-## jasmineReact.getJasmineContent
+## jasmineReact.getDefaultContainer
 
-After each test, it is imperative that jasmineReact clean up after itself so that one test doesn't pollute the next.
-One step in this process, is making sure that any component rendered gets unmounted.  By default, in a jasmine suite
-all DOM elements should be a child of the `#jasmine_content` div.  If that is true for you, then you won't need to use
-this function.  But if you use some other div to render your jasmine DOM, then you'll want to redefine this function to
-meet your specification.
+The default container for jasmineReact is `document.getElementById("jasmine_content")`.
 
-If your jasmine test page, uses `#spec-dom` as its dom node, then you'd want to define the following:
+If your jasmine test page uses `#spec-dom` as its default dom node, then you'd want to define the following:
 
 ```js
-jasmineReact.getJasmineContent = function(){
+jasmineReact.getDefaultContainer = function(){
   return document.getElementById("spec-dom");
 };
 ```
 
 # Installation
 
-To install, include the `src/jasmine-react.js` file in your jasmine spec helpers list.
+```
+npm install jasmine-react-helpers --save-dev
+```
+
+Bower: TODO
+
+Script Tag: TODO
 
 
 # Testing

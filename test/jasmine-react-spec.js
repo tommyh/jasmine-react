@@ -7,52 +7,74 @@ describe("jasmineReact", function(){
   });
 
   describe("renderComponent", function(){
-    var fakeComponentSpy, fakeContainerSpy, fakeRenderComponentResponseSpy;
+    var fooKlass;
 
     beforeEach(function(){
-      fakeComponentSpy = jasmine.createSpy("fakeComponent");
-      fakeContainerSpy = jasmine.createSpy("fakeContainer");
+      fooKlass = React.createClass({
+        render: function(){
+          return React.DOM.div({});
+        }
+      });
 
-      fakeRenderComponentResponseSpy = jasmine.createSpy("fakeRenderComponentResponse");
-      spyOn(React, "renderComponent").andReturn(fakeRenderComponentResponseSpy);
-    });
-
-    it("should call React.renderComponent", function(){
-      jasmineReact.renderComponent();
-
-      expect(React.renderComponent).toHaveBeenCalled();
+      spyOn(React, "renderComponent").andCallThrough();
     });
 
     it("should call React.renderComponent with the passed in component", function(){
-      jasmineReact.renderComponent(fakeComponentSpy, fakeContainerSpy);
+      jasmineReact.renderComponent(fooKlass({foo: "bar"}), document.getElementById("jasmine_content"));
 
-      expect(React.renderComponent).toHaveBeenCalledWith(fakeComponentSpy, jasmine.any(Function));
+      var renderComponentArgs = React.renderComponent.mostRecentCall.args[0];
+
+      expect(renderComponentArgs.props.foo).toBe("bar");
     });
 
     it("should call React.renderComponent with the passed in container", function(){
-      jasmineReact.renderComponent(fakeComponentSpy, fakeContainerSpy);
+      var container = document.getElementById("jasmine_content");
+      jasmineReact.renderComponent(fooKlass(), container);
 
-      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Function), fakeContainerSpy);
+      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Object), container);
     });
 
     it("should call React.renderComponent with #jasmine_content container if no container is passed in", function(){
-      jasmineReact.renderComponent(fakeComponentSpy);
+      jasmineReact.renderComponent(fooKlass());
 
-      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Function), document.getElementById("jasmine_content"));
+      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Object), document.getElementById("jasmine_content"));
     });
 
     it("should call React.renderComponent with a callback if one is passed in", function(){
       var fakeCallbackSpy = jasmine.createSpy("fakeCallback");
 
-      jasmineReact.renderComponent(fakeComponentSpy, fakeContainerSpy, fakeCallbackSpy);
+      jasmineReact.renderComponent(fooKlass(), document.getElementById("jasmine_content"), fakeCallbackSpy);
 
-      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Function), jasmine.any(Function), fakeCallbackSpy);
+      expect(React.renderComponent).toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Object), fakeCallbackSpy);
     });
 
     it("should return the return value of React.renderComponent", function(){
-      var returnValue = jasmineReact.renderComponent(fakeComponentSpy, fakeContainerSpy);
+      var returnValue = jasmineReact.renderComponent(fooKlass({baz: "bat"}), document.getElementById("jasmine_content"));
 
-      expect(returnValue).toBe(fakeRenderComponentResponseSpy);
+      expect(returnValue.props.baz).toBe("bat");
+    });
+  });
+
+  describe("renderComponent: test pollution", function(){
+    it("should not pollute a rendered component from one test into another test", function(){
+      var coolKlass = React.createClass({
+        render: function(){
+          return React.DOM.div({
+            id: "really-cool"
+          });
+        }
+      });
+
+      // lets pretend this is test #1
+      jasmineReact.renderComponent(coolKlass());
+
+      expect(document.getElementById("really-cool")).toBeDefined();
+
+      // this is the method in the afterEach which is needed to prevent test pollution for renderComponent
+      jasmineReact.unmountAllRenderedComponents();
+
+      // lets pretend this is test #1
+      expect(document.getElementById("really-cool")).toBeNull();
     });
   });
 
@@ -177,7 +199,7 @@ describe("jasmineReact", function(){
 
       // these are the methods in the afterEach which are needed to prevent test pollution for spyOnClass
       jasmineReact.removeAllSpies();
-      jasmineReact.clearJasmineContent();
+      jasmineReact.unmountAllRenderedComponents();
 
       // lets pretend this is test #2
       var barTwo = jasmineReact.renderComponent(barKlass());
@@ -334,73 +356,57 @@ describe("jasmineReact", function(){
 
     });
 
-    it("should unmount the component", function(){
-      var barComponent = jasmineReact.renderComponent(barKlass());
-      expect(componentWillUnmountSpy.callCount).toBe(0);
+    describe("the component is mounted", function(){
+      it("should unmount the component", function(){
+        var barComponent = jasmineReact.renderComponent(barKlass());
+        expect(componentWillUnmountSpy.callCount).toBe(0);
 
-      jasmineReact.unmountComponent(barComponent);
+        jasmineReact.unmountComponent(barComponent);
 
-      expect(componentWillUnmountSpy.callCount).toBe(1);
-    });
-
-    it("should return the return value of unmountComponentAtNode", function(){
-      var fakeUnmount = jasmine.createSpy("unmountComponentAtNode");
-      spyOn(React, "unmountComponentAtNode").andReturn(fakeUnmount);
-
-      var barComponent = jasmineReact.renderComponent(barKlass());
-
-      expect(jasmineReact.unmountComponent(barComponent)).toBe(fakeUnmount);
-    });
-  });
-
-  describe("clearJasmineContent", function(){
-    it("should clear out the html in #jasmine_content", function(){
-      var barKlass = React.createClass({
-        render: function(){
-          return React.DOM.div({id: "bar-test-div"});
-        }
+        expect(componentWillUnmountSpy.callCount).toBe(1);
       });
 
-      jasmineReact.renderComponent(barKlass());
-      expect(document.getElementById("bar-test-div")).toBeDefined();
+      it("should return the return value of unmountComponentAtNode", function(){
+        var barComponent = jasmineReact.renderComponent(barKlass({cool: "town"}));
 
-      jasmineReact.clearJasmineContent();
+        var returnValue = jasmineReact.unmountComponent(barComponent);
 
-      expect(document.getElementById("bar-test-div")).toBeNull();
+        expect(returnValue).toBe(true);
+      });
     });
 
-    it("should unmount the react component in #jasmine_content", function(){
-      var componentWillUnmountSpy = jasmine.createSpy("componentWillUnmount");
+    describe("the component is not mounted", function(){
 
-      var barKlass = React.createClass({
-        render: function(){
-          return React.DOM.div({id: "bar-test-div"});
-        },
-        componentWillUnmount: function(){
-          componentWillUnmountSpy();
-        }
+      it("should not unmount the component", function(){
+        var barComponent = jasmineReact.renderComponent(barKlass());
+
+        React.unmountComponentAtNode(barComponent.getDOMNode().parentNode);
+
+        expect(componentWillUnmountSpy.callCount).toBe(1);
+
+        expect(function(){
+          jasmineReact.unmountComponent(barComponent);
+        }).not.toThrow();
+
+        expect(componentWillUnmountSpy.callCount).toBe(1);
       });
 
-      jasmineReact.renderComponent(barKlass());
-      expect(componentWillUnmountSpy.callCount).toBe(0);
+      it("should return false", function(){
+        var barComponent = jasmineReact.renderComponent(barKlass());
 
-      jasmineReact.clearJasmineContent();
+        React.unmountComponentAtNode(barComponent.getDOMNode().parentNode);
 
-      expect(componentWillUnmountSpy.callCount).toBe(1);
-    });
+        var returnValue;
 
-    it("should warn the user if a jasmine content element can't be found", function(){
-      spyOn(jasmineReact, "getJasmineContent").andCallFake(function(){
-        return document.getElementById("bogus");
+        expect(function(){
+          returnValue = jasmineReact.unmountComponent(barComponent);
+        }).not.toThrow();
+
+        expect(returnValue).toBe(false);
       });
-
-      spyOn(console, "warn");
-
-      jasmineReact.clearJasmineContent();
-
-      expect(console.warn).toHaveBeenCalled();
-      expect(console.warn.mostRecentCall.args[0].substring(0, 63)).toBe("jasmineReact is unable to clear out the jasmine content element");
     });
+
+
   });
 
 });
