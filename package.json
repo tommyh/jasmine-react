@@ -19,7 +19,7 @@
     "karma-jasmine": "^0.1.5",
     "karma-phantomjs-launcher": "^0.1.4",
     "karma-react-jsx-preprocessor": "^0.1.1",
-    "react": "^0.8.0",
-    "react-tools": "^0.11.1"
+    "react": "^0.12.1",
+    "react-tools": "^0.12.1"
   }
 }

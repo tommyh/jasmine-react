@@ -1,5 +1,3 @@
-/** @jsx React.DOM */
-
 /*
  * The objective of this spec is to test all of the code samples in the official documentation.
  *   If the code samples are wrong, people will think the library is wrong - which is no bueno. :)
@@ -27,10 +25,10 @@ describe("README.md", function(){
       it("can spy on a function for a React class", function(){
         jasmineReact.spyOnClass(HelloWorld, "randomNumber").andReturn(42);
 
-        // jasmineReact wraps React.renderComponent, so you don't have to worry
+        // jasmineReact wraps React.render, so you don't have to worry
         //  about the async nature of when the actual DOM get's rendered, or selecting
         //  where your component needs to get rendered (default is #jasmine_content)
-        var myWorld = jasmineReact.renderComponent(<HelloWorld />);
+        var myWorld = jasmineReact.render(<HelloWorld />);
 
         expect(myWorld.state.number).toBe(42);
       });
@@ -38,7 +36,7 @@ describe("README.md", function(){
       it("can assert that a spy has been called", function(){
         jasmineReact.spyOnClass(HelloWorld, "randomNumber");
 
-        jasmineReact.renderComponent(HelloWorld());
+        jasmineReact.render(<HelloWorld />);
 
         // because we spy on the class and not the instance, we have to assert that the
         //   function on the class' prototype was called.
@@ -70,9 +68,9 @@ describe("README.md", function(){
         jasmineReact.createStubComponent(window, "Profile");
 
         // This line won't throw the "I like to blow up" error because we've replaced the class with a test double!
-        var avatar = jasmineReact.renderComponent(<Avatar />);
+        var avatar = jasmineReact.render(<Avatar />);
 
-        expect(avatar.refs.pic.props.username).toBe("Zuck")
+        expect(avatar.refs.pic.props.username).toBe("Zuck");
       });
 
     });
@@ -103,7 +101,7 @@ describe("README.md", function(){
           jasmineReact.addMethodToClass(profileClassStub, "rotate", function(){});
           jasmineReact.spyOnClass(profileClassStub, "rotate");
 
-          var avatar = jasmineReact.renderComponent(<Avatar />);
+          var avatar = jasmineReact.render(<Avatar />);
 
           expect(jasmineReact.classPrototype(profileClassStub).rotate).not.toHaveBeenCalled();
           avatar.rotateProfile();

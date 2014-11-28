@@ -28,10 +28,10 @@ describe("HelloWorld", function(){
   it("can spy on a function for a React class", function(){
     jasmineReact.spyOnClass(HelloWorld, "randomNumber").andReturn(42);
 
-    // jasmineReact wraps React.renderComponent, so you don't have to worry
+    // jasmineReact wraps React.render, so you don't have to worry
     //  about the async nature of when the actual DOM get's rendered, or selecting
     //  where your component needs to get rendered (default is #jasmine_content)
-    var myWorld = jasmineReact.renderComponent(<HelloWorld />);
+    var myWorld = jasmineReact.render(<HelloWorld />);
 
     expect(myWorld.state.number).toBe(42);
   });
@@ -39,7 +39,7 @@ describe("HelloWorld", function(){
   it("can assert that a spy has been called", function(){
     jasmineReact.spyOnClass(HelloWorld, "randomNumber");
 
-    jasmineReact.renderComponent(HelloWorld());
+    jasmineReact.render(<HelloWorld />;
 
     // because we spy on the class and not the instance, we have to assert that the
     //   function on the class' prototype was called.
@@ -77,7 +77,7 @@ describe("Avatar", function(){
    jasmineReact.createStubComponent(window, "Profile");
 
    // This line won't throw the "I like to blow up" error because we've replaced the class with a test double!
-   var avatar = jasmineReact.renderComponent(<Avatar />);
+   var avatar = jasmineReact.render(<Avatar />);
 
    expect(avatar.refs.pic.props.username).toBe("Zuck")
   });
@@ -114,7 +114,7 @@ describe("Avatar", function(){
       jasmineReact.addMethodToClass(profileClassStub, "rotate", function(){});
       jasmineReact.spyOnClass(profileClassStub, "rotate");
 
-      var avatar = jasmineReact.renderComponent(<Avatar />);
+      var avatar = jasmineReact.render(<Avatar />);
 
       expect(jasmineReact.classPrototype(profileClassStub).rotate).not.toHaveBeenCalled();
       avatar.rotateProfile();
@@ -126,25 +126,25 @@ describe("Avatar", function(){
 
 # API
 
-## jasmineReact.renderComponent
+## jasmineReact.render
 
-`jasmineReact.renderComponent(component, [container], [callback]);`
+`jasmineReact.render(component, [container], [callback]);`
 
-When rendering a React component, this is a convenience function for `React.renderComponent`.
+When rendering a React component, this is a convenience function for `React.render`.
 
 It has a few helpful features:
 
 * the component is actually rendered to an attached DOM node (unlike `React.addons.TestUtils.renderIntoDocument which
   renders into a detached DOM node).
 * the component will be automatically unmounted after the test is complete.
-  NOTE: If you call React.renderComponent in a jasmine test and the component is not unmounted, that component
+  NOTE: If you call React.render in a jasmine test and the component is not unmounted, that component
   will pollute any subsequent tests which try to render into that container.
 * the container argument is optional.  By default it will be: `document.getElementById("jasmine_content").  If you
   want to override this behavior, look at the documentation for `jasmineReact.getDefaultContainer`
-* `React.renderComponent` will return before the rendering has occurred.  `jasmineReact.renderComponent` will wait
+* `React.render` will return before the rendering has occurred.  `jasmineReact.render` will wait
   until the async render has been performed.
 
-Just like `React.renderComponent`, this method will return the component instance.
+Just like `React.render`, this method will return the component instance.
 
 
 ## jasmineReact.spyOnClass
@@ -173,7 +173,7 @@ on that component class.  This function returns you the object you want to make 
 ```js
 jasmineReact.spyOnClass(Avatar, "getWidth");
 
-var myAvatar = jasmineReact.renderComponent(<Avatar />);
+var myAvatar = jasmineReact.render(<Avatar />);
 myAvatar.getWidth();
 
 expect(jasmineReact.classPrototype(Avatar).getWidth).toHaveBeenCalled();
@@ -209,7 +209,7 @@ This function makes it easy to unmount a component, given just the component ins
 Unmounting a component is needed to test `componentWillUnmount` behavior.
 
 ```js
-var myAvatar = jasmineReact.renderComponent(<Avatar />);
+var myAvatar = jasmineReact.render(<Avatar />);
 jasmineReact.unmountComponent(myAvatar);
 ```
 

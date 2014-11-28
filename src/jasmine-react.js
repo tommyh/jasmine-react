@@ -5,14 +5,14 @@ var spies = [],
   renderedComponents = [];
 
 var jasmineReact = {
-  renderComponent: function(component, container, callback){
+  render: function(component, container, callback){
     if(typeof container === "undefined"){
       container = this.getDefaultContainer();
     }
 
     var comp = (typeof callback === "undefined") ?
-      React.renderComponent(component, container) :
-      React.renderComponent(component, container, callback);
+      React.render(component, container) :
+      React.render(component, container, callback);
 
     // keep track of the components we render, so we can unmount them later
     renderedComponents.push(comp);
@@ -45,7 +45,7 @@ var jasmineReact = {
     var componentConstructor = this.classComponentConstructor(klass);
 
     if(typeof componentConstructor === "undefined"){
-      throw("A component constructor could not be found for this class.  Are you sure you passed in a the component definition for a React component?")
+      throw("A component constructor could not be found for this class.  Are you sure you passed in a the component definition for a React component?");
     }
 
     return componentConstructor.prototype;
