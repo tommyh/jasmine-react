@@ -22,10 +22,17 @@ var jasmineReact = {
 
   spyOnClass: function(klass, methodName){
     var klassProto = this.classPrototype(klass),
+      original = klassProto[methodName],
       jasmineSpy = spyOn(klassProto, methodName);
 
     // keep track of the spies, so we can clean up the __reactAutoBindMap later
-    spies.push(jasmineSpy);
+    // (Jasmine 2.1)
+    spies.push({
+      spy: jasmineSpy,
+      baseObj: klassProto,
+      methodName: methodName,
+      originalValue: original
+    });
 
     // react.js will autobind `this` to the correct value and it caches that
     //  result on a __reactAutoBindMap for performance reasons.
