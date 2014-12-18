@@ -120,6 +120,9 @@ var jasmineReact = {
   }
 };
 
+// backwards compatability for React < 0.12
+jasmineReact.renderComponent = jasmineReact.render;
+
 // TODO: this has no automated test coverage.  Add some integration tests for coverage.
 afterEach(function(){
   jasmineReact.removeAllSpies();

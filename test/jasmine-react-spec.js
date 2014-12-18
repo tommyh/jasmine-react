@@ -53,6 +53,12 @@ describe("jasmineReact", function(){
 
       expect(returnValue.props.baz).toBe("bat");
     });
+
+    it("should alias jasmineReact.renderComponent to jasmineReact.render", function(){
+      var returnValue = jasmineReact.renderComponent(<FooKlass baz="bat" />, document.getElementById("jasmine_content"));
+
+      expect(returnValue.props.baz).toBe("bat");
+    });
   });
 
   describe("render: test pollution", function(){
