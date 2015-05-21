@@ -1,4 +1,5 @@
 var React = require('react');
+var semver = require('semver');
 
 var spies = [],
   componentStubs = [],
@@ -44,6 +45,9 @@ var jasmineReact = {
   },
 
   classComponentConstructor: function(klass){
+    if(semver.gt(React.version, "0.13.0")) { // React 0.13.0
+      return klass;
+    }
     return klass.type ||                // React 0.11.1
            klass.componentConstructor;  // React 0.8.0
   },
