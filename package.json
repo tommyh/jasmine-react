@@ -8,6 +8,7 @@
     "type": "git",
     "url": "git://github.com/tommyh/jasmine-react.git"
   },
+  "license": "MIT",
   "devDependencies": {
     "browserify": "^4.2.3",
     "grunt": "^0.4.5",
