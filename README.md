@@ -39,7 +39,7 @@ describe("HelloWorld", function(){
   it("can assert that a spy has been called", function(){
     jasmineReact.spyOnClass(HelloWorld, "randomNumber");
 
-    jasmineReact.render(<HelloWorld />;
+    jasmineReact.render(<HelloWorld />);
 
     // because we spy on the class and not the instance, we have to assert that the
     //   function on the class' prototype was called.
