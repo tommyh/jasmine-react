@@ -23,29 +23,41 @@ var jasmineReact = {
   spyOnClass: function(klass, methodName){
     var klassProto = this.classPrototype(klass),
       original = klassProto[methodName],
-      jasmineSpy = spyOn(klassProto, methodName);
+      jasmineSpy = spyOn(klassProto, methodName),
+      methodNameIndex;
 
-    // keep track of the spies, so we can clean up the __reactAutoBindMap later
+    // react.js will autobind `this` to the correct value and it caches that
+    //  result on a __reactAutoBindMap for performance reasons.
+    // React 0.14.x
+    if(klassProto.__reactAutoBindMap){
+      klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
+    }
+
+    // React 15.x
+    if(klassProto.__reactAutoBindPairs){
+      methodNameIndex = klassProto.__reactAutoBindPairs.indexOf(methodName);
+      if(methodNameIndex >= 0){
+        klassProto.__reactAutoBindPairs[methodNameIndex + 1] = jasmineSpy;
+      }
+    }
+
+    // keep track of the spies, so we can clean up the __reactAutoBindMap/__reactAutoBindPairs later
     // (Jasmine 2.1)
     spies.push({
       spy: jasmineSpy,
       baseObj: klassProto,
       methodName: methodName,
+      methodNameIndex: methodNameIndex,
       originalValue: original
     });
-
-    // react.js will autobind `this` to the correct value and it caches that
-    //  result on a __reactAutoBindMap for performance reasons.
-    if(klassProto.__reactAutoBindMap){
-      klassProto.__reactAutoBindMap[methodName] = jasmineSpy;
-    }
 
     return jasmineSpy;
   },
 
   classComponentConstructor: function(klass){
-    return klass.type ||                // React 0.11.1
-           klass.componentConstructor;  // React 0.8.0
+    return klass.type ||                                    // React 0.11.1
+           klass.componentConstructor ||                    // React 0.8.0
+           klass.prototype && klass.prototype.constructor;  // React 15
   },
 
   classPrototype: function(klass){
@@ -89,8 +101,14 @@ var jasmineReact = {
   removeAllSpies: function(){
     for (var i = 0; i < spies.length; i++) {
       var spy = spies[i];
+      // React 0.14.x
       if(spy.baseObj.__reactAutoBindMap){
         spy.baseObj.__reactAutoBindMap[spy.methodName] = spy.originalValue;
+      }
+
+      // React 15.x
+      if(spy.baseObj.__reactAutoBindPairs){
+        spy.baseObj.__reactAutoBindPairs[spy.methodNameIndex + 1] = spy.originalValue;
       }
       spy.baseObj[spy.methodName] = spy.originalValue;
     }
