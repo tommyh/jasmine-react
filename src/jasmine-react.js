@@ -56,8 +56,8 @@ var jasmineReact = {
 
   classComponentConstructor: function(klass){
     return klass.type ||                                    // React 0.11.1
-        klass.componentConstructor ||                    // React 0.8.0
-        klass.prototype && klass.prototype.constructor;  // React 15
+           klass.componentConstructor ||                    // React 0.8.0
+           klass.prototype && klass.prototype.constructor;  // React 15
   },
 
   classPrototype: function(klass){
