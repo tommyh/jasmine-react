@@ -1,4 +1,5 @@
 var React = require('react');
+var createReactClass = require('create-react-class');
 
 var spies = [],
   componentStubs = [],
@@ -62,7 +63,7 @@ var jasmineReact = {
     // keep track of the components we stub, so we can swap them back later
     componentStubs.push({obj: obj, propertyName: propertyName, originalValue: obj[propertyName]});
 
-    return obj[propertyName] = React.createClass({
+    return obj[propertyName] = createReactClass({
       render: function(){
         return React.DOM.div();
       }

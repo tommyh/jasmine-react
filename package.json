@@ -21,5 +21,8 @@
     "karma-react-jsx-preprocessor": "^0.1.1",
     "react": "^0.12.1",
     "react-tools": "^0.12.1"
+  },
+  "dependencies": {
+    "create-react-class": "^15.6.3"
   }
 }
